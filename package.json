@@ -1,0 +1,42 @@
+{
+  "name": "lvp_api",
+  "version": "0.1.0",
+  "description": "Api pour l'évènement la voie pailletée",
+  "homepage": "https://github.com/Norookezi/LaVoiePailleteeApi#readme",
+  "bugs": {
+    "url": "https://github.com/Norookezi/LaVoiePailleteeApi/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Norookezi/LaVoiePailleteeApi.git"
+  },
+  "license": "ISC",
+  "author": "Norookezi",
+  "type": "module",
+  "main": "/dist/index.js",
+  "scripts": {
+    "serve": "npx tsx ./src/index.ts",
+    "build": "npx --package typescript tsc",
+    "start": "node --import tsx build/index.js",
+    "lint": "npx eslint",
+    "test": "npx jest --passWithNoTests"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.23.0",
+    "@jest/globals": "^29.7.0",
+    "@stylistic/eslint-plugin-ts": "^4.2.0",
+    "@types/node": "^22.13.14",
+    "eslint": "^9.23.0",
+    "globals": "^16.0.0",
+    "ts-jest": "^29.3.0",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.2",
+    "typescript-eslint": "^8.28.0"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "esbuild": "^0.25.2",
+    "fastify": "^5.2.2"
+  },
+  "keywords": []
+}

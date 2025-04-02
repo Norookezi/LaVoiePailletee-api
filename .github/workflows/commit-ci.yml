@@ -1,0 +1,29 @@
+name: CI code quality check
+
+on:
+  push
+
+jobs:
+  test_commit_validity:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+       
+      - name: Install node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+            
+      - name: Install packages
+        run: npm i
+
+      - name: Check Eslint
+        run: npm run lint
+        
+      - name: Run tests
+        run: npm run test
+
+      - name: Build
+        run: npm run build

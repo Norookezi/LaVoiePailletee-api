@@ -1,0 +1,92 @@
+name: CI Deploy in prod
+
+on:
+  push:
+    tags:
+      - v*.*.*
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+       
+      - name: Install node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+            
+      - name: Install packages
+        run: npm i
+            
+      - name: Run tests
+        run: npm run test
+        
+      - name: Build
+        run: npm run build
+   
+  deploy:
+    runs-on: ubuntu-22.04
+    needs: build
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: norookezi/lavoiepailletee-api
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Login to DockerHub
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USER }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: norookezi/lavoiepailletee-api-preprod
+          labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Install wireguard
+        run: sudo apt-get update && sudo apt-get install -y wireguard resolvconf
+  
+      - name: Create WireGuard config
+        run: |
+          echo -e "${{ secrets.PREPROD_VPN }}" > ./wg0.conf
+  
+      - name: Setup WireGuard interface
+        run: |
+          sudo wg-quick up ./wg0.conf
+          sudo wg show
+          
+      - name: Deploy to servers
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.PREPROD_SSH_KEY }}
+          SERVER_IPS: ${{ secrets.PREPROD_SSH_SERVER }}
+          SSH_USER: ${{ secrets.PREPROD_SSH_USER }}
+        run: |
+          echo -e "$SSH_PRIVATE_KEY" > private_key
+          chmod 600 private_key
+          
+          IFS=',' read -ra SERVERS <<< "$SERVER_IPS"
+          for SERVER in "${SERVERS[@]}"; do
+            ssh -i private_key -o StrictHostKeyChecking=no ${SSH_USER}@${SERVER} bash -c "'
+
+            docker pull norookezi/lavoiepailletee-api:latest -q
+
+            docker stop lavoiepailletee-api 2>/dev/null || echo "no container yet"
+            docker rm lavoiepailletee-api 2>/dev/null || echo "no container yet"
+
+            docker run -d --name lavoiepailletee-api -p 8080:8080 -e NODE_ENV=production norookezi/lavoiepailletee-api:latest
+            '"
+          done

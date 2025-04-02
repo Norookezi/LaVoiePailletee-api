@@ -1,0 +1,8 @@
+services:
+  app:
+    build: .  # Path to Dockerfile
+    image: norookezi/api-lavoiepailletee:latest
+    ports:
+      - "8080:8080"
+    container_name: api_lavoiepailletee
+    restart: unless-stopped
