@@ -82,11 +82,11 @@ jobs:
           for SERVER in "${SERVERS[@]}"; do
             ssh -i private_key -o StrictHostKeyChecking=no ${SSH_USER}@${SERVER} bash -c "'
 
-            docker pull norookezi/lavoiepailletee-api:latest -q
+            docker pull norookezi/lavoiepailletee-api-preprod:latest -q
 
-            docker stop lavoiepailletee-api 2>/dev/null || echo "no container yet"
-            docker rm lavoiepailletee-api 2>/dev/null || echo "no container yet"
+            docker stop lavoiepailletee-api-preprod 2>/dev/null || echo "no container yet"
+            docker rm lavoiepailletee-api-preprod 2>/dev/null || echo "no container yet"
 
-            docker run -d --name lavoiepailletee-api -p 8080:8080 -e NODE_ENV=production norookezi/lavoiepailletee-api:latest
+            docker run -d --name lavoiepailletee-api-preprod -p 8080:8080 -e NODE_ENV=production norookezi/lavoiepailletee-api-preprod:latest
             '"
           done
