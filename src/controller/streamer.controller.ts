@@ -67,16 +67,18 @@ export class StreamerController {
             const addedList: HelixUser[] = await this.twitch.api.users.getUsersByNames(added);
             const subscriptions = (await this.twitch.api.eventSub.getSubscriptions()).data;
 
-            await Promise.all(addedList.map(async (user) => {
+            Promise.all(addedList.map((user) => {
                 const event = subscriptions.filter(sub => sub.condition.broadcaster_user_id == user.id);
                 // const security: string = process.env['SECURITY_HASH']!;
 
                 if (!event.find(sub => sub.type === 'stream.online')) {
-                    await this.twitch.api.eventSub.subscribeToStreamOnlineEvents(user.id, this.twitch.EventTransport).catch(); //If twitch already saved the event, don't need to do anything
+                    console.log(this.twitch.EventTransport);
+                    this.twitch.api.eventSub.subscribeToStreamOnlineEvents(user.id, this.twitch.EventTransport).catch(); //If twitch already saved the event, don't need to do anything
                 }
 
                 if (!event.find(sub => sub.type === 'stream.offline')) {
-                    await this.twitch.api.eventSub.subscribeToStreamOfflineEvents(user.id, this.twitch.EventTransport).catch(); //If twitch already saved the event, don't need to do anything
+                    console.log(this.twitch.EventTransport);
+                    this.twitch.api.eventSub.subscribeToStreamOfflineEvents(user.id, this.twitch.EventTransport).catch(); //If twitch already saved the event, don't need to do anything
                 }
                 
                 this.cacheAppend(user);
