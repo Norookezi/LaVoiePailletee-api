@@ -16,7 +16,7 @@ if (process.env['NODE_ENV'] === 'DEV') {
 
 const twitchService: TwitchService = await TwitchService.initialize();
 await twitchService.auth();
-await twitchService.api.eventSub.deleteAllSubscriptions();
+await twitchService.api.eventSub.deleteAllSubscriptions().catch((e)=>{console.log(e.body);});
 await twitchService.ws.start();
 
 const fastify: FastifyServer = FastifyServer.initialize();
