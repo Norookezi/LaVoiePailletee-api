@@ -1,8 +1,23 @@
 services:
   app:
-    build: .  # Path to Dockerfile
-    image: norookezi/api-lavoiepailletee:latest
+    image: norookezi/lavoiepailletee-api-preprod:latest
     ports:
       - "8080:8080"
-    container_name: api_lavoiepailletee
+    networks:
+      api-lvp-preprod-net:
+        ipv4_address: ${API_IP}
+    container_name: api_lavoiepailletee-preprod
     restart: unless-stopped
+    env_file:
+      - path: ./.env
+        required: true
+      - path: ./.env.local
+        required: false
+
+
+networks:
+  api-lvp-preprod-net:
+    ipam:
+      driver: default
+      config:
+        - subnet: "172.2.1.0/24"
