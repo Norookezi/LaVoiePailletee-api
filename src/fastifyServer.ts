@@ -5,6 +5,7 @@ import fastify, {
 } from 'fastify';
 import { config } from 'utils/dotenv.utils';
 import cors from '@fastify/cors';
+import { readFileSync } from 'fs';
 config();
 
 export class FastifyServer {
@@ -41,6 +42,15 @@ export class FastifyServer {
                 reply.type('application/json').send({
                     version: process.env['MANIFEST_VERSION'] ?? 'v0',
                 });
+            }
+        );
+
+        this.server.get(
+            '/favicon.ico',
+            async (_: FastifyRequest, reply: FastifyReply) => {
+                reply.type('image/x-icon').send(
+                    await readFileSync(`./public/favicon${process.env['NODE_ENV'] !== 'PROD'?'_dev':''}.ico`)  
+                );
             }
         );
 
