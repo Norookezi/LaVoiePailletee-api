@@ -1,4 +1,4 @@
-name: CI Deploy in prod
+name: CI Deploy in preprod
 
 on:
   push:
@@ -54,8 +54,8 @@ jobs:
         with:
           context: .
           push: true
-          tags: norookezi/lavoiepailletee-api-preprod
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: norookezi/lavoiepailletee-api-preprod:latest
+          labels: ${{ steps.meta.outputs.tags }}
 
       - name: Install wireguard
         run: sudo apt-get update && sudo apt-get install -y wireguard resolvconf
@@ -88,7 +88,8 @@ jobs:
             scp -i private_key -r ./.env ${SSH_USER}@${SERVER}:$DEPLOY_PATH
             ssh -i private_key -o StrictHostKeyChecking=no ${SSH_USER}@${SERVER} bash -c "'
               cd $DEPLOY_PATH
-              docker compose down lavoiepailletee-api-preprod
+              docker compose down
+              docker compose pull
               docker compose build
               docker compose up -d
             '"
