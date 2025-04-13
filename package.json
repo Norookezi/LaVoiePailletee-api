@@ -35,6 +35,7 @@
     "typescript-eslint": "^8.28.0"
   },
   "dependencies": {
+    "@fastify/cors": "^11.0.1",
     "@twurple/api": "^7.2.1",
     "@twurple/auth": "^7.2.1",
     "@twurple/eventsub-http": "^7.2.1",
