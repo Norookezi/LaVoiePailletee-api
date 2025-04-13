@@ -98,7 +98,7 @@ export class StreamerController {
                                 this.twitch.EventTransport
                             )
                             .catch((err) => {
-                                Logger.error(err);
+                                Logger.error(err.body);
                             });
                         Logger.success(
                             `Done subscribeToStreamOnlineEvents for ${user.displayName}`,
@@ -118,7 +118,7 @@ export class StreamerController {
                                 this.twitch.EventTransport
                             )
                             .catch((err) => {
-                                Logger.error(err);
+                                Logger.error(err.body);
                             });
                         Logger.success(
                             `Done subscribeToStreamOfflineEvents for ${user.displayName}`,
