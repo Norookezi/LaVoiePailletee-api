@@ -23,9 +23,9 @@ export class StreamerController {
         this.getStreamerList();
         
         //Update the list every 15 minutes
-        setInterval(()=>{
-            this.getStreamerList();
-        }, 10000);
+        // setInterval(()=>{
+        //     this.getStreamerList();
+        // }, 10000);
     }
 
     private static instance: StreamerController | null = null;
@@ -56,7 +56,6 @@ export class StreamerController {
         );
         
         const users: string[] = data.values.flat(1).filter(user => !user.includes(' ')).map(user => user.toLowerCase());
-
         const cache: string[] = this.cache.map(s=>s.name.toLowerCase());
 
         const added: string[] = users.filter(user => !cache.includes(user));
@@ -67,21 +66,20 @@ export class StreamerController {
             const addedList: HelixUser[] = await this.twitch.api.users.getUsersByNames(added);
             const subscriptions = (await this.twitch.api.eventSub.getSubscriptions()).data;
 
-            Promise.all(addedList.map((user) => {
+            Promise.all(addedList.map(async (user) => {
                 const event = subscriptions.filter(sub => sub.condition.broadcaster_user_id == user.id);
                 // const security: string = process.env['SECURITY_HASH']!;
-
                 if (!event.find(sub => sub.type === 'stream.online')) {
-                    console.log(this.twitch.EventTransport);
-                    this.twitch.api.eventSub.subscribeToStreamOnlineEvents(user.id, this.twitch.EventTransport).catch(); //If twitch already saved the event, don't need to do anything
+                    await this.twitch.api.eventSub.subscribeToStreamOnlineEvents(user.id, this.twitch.EventTransport).catch((err)=> {
+                        console.log(err);
+                    });
                 }
-
                 if (!event.find(sub => sub.type === 'stream.offline')) {
-                    console.log(this.twitch.EventTransport);
-                    this.twitch.api.eventSub.subscribeToStreamOfflineEvents(user.id, this.twitch.EventTransport).catch(); //If twitch already saved the event, don't need to do anything
+                    await this.twitch.api.eventSub.subscribeToStreamOfflineEvents(user.id, this.twitch.EventTransport).catch((err)=> {
+                        console.log(err);
+                    });
                 }
-                
-                this.cacheAppend(user);
+                await this.cacheAppend(user);
             }));
         }
 
@@ -110,9 +108,6 @@ export class StreamerController {
 
 
     async getStatus(): Promise<streamer[]> {
-        // if (this.cacheExpirationDate.getTime() < new Date().getTime()) {
-        //     this.setCache(this.cache.map(streamer => streamer.name));
-        // }
         return this.cache;
     }
 
