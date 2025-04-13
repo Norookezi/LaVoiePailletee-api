@@ -83,14 +83,12 @@ export class TwitchService {
             secret: process.env['TWITCH_CLIENT_SECRET']!,
             adapter: {
                 createHttpServer: function (): Server {
-                    console.log('createHttpServer not implemented');
                     return new Server();
                 },
                 listenUsingSsl: false,
                 listenerPort: Number(process.env['API_PORT']!),
                 getHostName: function (): Promise<string> {
-                    console.log('getHostName not implemented');
-                    return Promise.resolve('dimstudgmfipxcisy2zqvon5gshwdm.norookezi.fr');
+                    return Promise.resolve(process.env['API_HOST']!);
 
                 },
                 pathPrefix: undefined,

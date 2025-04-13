@@ -1,5 +1,6 @@
 import { HelixUser } from '@twurple/api';
 import { Sheet } from 'utils/GoogleSheet.utils';
+import { Logger } from 'utils/Logger.utils';
 import { TwitchService } from 'utils/TwitchService.utils';
 
 export interface streamer {
@@ -70,14 +71,18 @@ export class StreamerController {
                 const event = subscriptions.filter(sub => sub.condition.broadcaster_user_id == user.id);
                 // const security: string = process.env['SECURITY_HASH']!;
                 if (!event.find(sub => sub.type === 'stream.online')) {
+                    Logger.waiting(`Starting subscribeToStreamOnlineEvents for ${user.displayName}`, true, false);
                     await this.twitch.api.eventSub.subscribeToStreamOnlineEvents(user.id, this.twitch.EventTransport).catch((err)=> {
-                        console.log(err);
+                        Logger.error(err);
                     });
+                    Logger.success(`Done subscribeToStreamOnlineEvents for ${user.displayName}`, true, false);
                 }
                 if (!event.find(sub => sub.type === 'stream.offline')) {
+                    Logger.waiting(`Starting subscribeToStreamOfflineEvents for ${user.displayName}`, true, false);
                     await this.twitch.api.eventSub.subscribeToStreamOfflineEvents(user.id, this.twitch.EventTransport).catch((err)=> {
-                        console.log(err);
+                        Logger.error(err);
                     });
+                    Logger.success(`Done subscribeToStreamOfflineEvents for ${user.displayName}`, true, false);
                 }
                 await this.cacheAppend(user);
             }));

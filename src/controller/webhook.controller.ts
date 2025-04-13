@@ -2,6 +2,7 @@ import { TwitchService } from 'utils/TwitchService.utils';
 import { StreamerController } from './streamer.controller';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { Security } from 'utils/Security.utils';
+import { Logger } from 'utils/Logger.utils';
 
 export class WebhookController {
     public _twitchService?: TwitchService;
@@ -85,8 +86,8 @@ export class WebhookController {
                     });  
                 break;
             }
-        } catch (err) {
-            console.log(err);
+        } catch (err: unknown) {
+            Logger.error(err as string);
         }
     } 
 }
