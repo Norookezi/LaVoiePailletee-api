@@ -88,7 +88,7 @@ export class WebhookController {
                 });
                 break;
 
-            case 'stream.online':
+            case 'stream.offline':
                 streamer.isOnline = false;
                     instance._streamerController!.cacheRefreshedAt = new Date();
                 return reply.code(200).send({
