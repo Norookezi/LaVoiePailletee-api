@@ -2,7 +2,7 @@ import { writeFileSync } from 'fs';
 import { config } from './dotenv.utils';
 config();
 /**
- * This is a logger 
+ * This is a logger
  */
 export class Logger {
     private static __instance: Logger | null = null;
@@ -17,7 +17,7 @@ export class Logger {
         Hidden: '\x1b[8m',
         Strike: '\x1b[9m',
     };
-    
+
     public static textColor = {
         BrightBlack: '\x1b[90m',
         BrightRed: '\x1b[91m',
@@ -34,9 +34,9 @@ export class Logger {
         Blue: '\x1b[34m',
         Magenta: '\x1b[35m',
         Cyan: '\x1b[36m',
-        White: '\x1b[37m'
+        White: '\x1b[37m',
     };
-    
+
     public static backgroundColor = {
         LightBlack: '\x1b[100m',
         LightRed: '\x1b[101m',
@@ -55,12 +55,11 @@ export class Logger {
         Cyan: '\x1b[46m',
         White: '\x1b[47m',
     };
-    
+
     public static set instance(instance: Logger) {
         if (Logger.__instance) return;
         const now: Date = new Date();
 
-        
         Logger.__instance = instance;
         Logger.instanceInitDate = Logger.__instance.parseDate(now);
     }
@@ -72,51 +71,112 @@ export class Logger {
     }
 
     public parseDate(date: Date): string {
-        return `${('0' + date.getDate()).slice(-2)}/${('0' + (date.getMonth()+1)).slice(-2)}/${date.getFullYear()}: ${('0' + (date.getHours())).slice(-2)}:${('0' + (date.getMinutes())).slice(-2)}:${('0' + (date.getSeconds())).slice(-2)}.${(date.getMilliseconds() +'0').slice(0,3)}`;
+        return `${('0' + date.getDate()).slice(-2)}/${(
+            '0' +
+            (date.getMonth() + 1)
+        ).slice(-2)}/${date.getFullYear()}: ${('0' + date.getHours()).slice(
+            -2
+        )}:${('0' + date.getMinutes()).slice(-2)}:${(
+            '0' + date.getSeconds()
+        ).slice(-2)}.${(date.getMilliseconds() + '0').slice(0, 3)}`;
     }
 
-    public static log(args: string | string[], print: boolean = true, write: boolean = true, type: 'log'|'error'|'info'|'hint'|'success' = 'log') {        
+    public static log(
+        args: string | string[],
+        print: boolean = true,
+        write: boolean = true,
+        type: 'log' | 'error' | 'info' | 'hint' | 'success' = 'log'
+    ) {
         const logger: Logger = Logger.instance;
 
         const date: string = logger.now(logger);
-        const contentAsString: string = (typeof args === 'string'?args: args.join(', '));
-        
+        const contentAsString: string =
+            typeof args === 'string' ? args : args.join(', ');
+
         const color = {
-            'log': Logger.textColor.BrightWhite,
-            'error': Logger.textColor.Red,
-            'info': Logger.textColor.BrightYellow,
-            'hint': Logger.textColor.White,
-            'success': Logger.textColor.Green
+            log: Logger.textColor.BrightWhite,
+            error: Logger.textColor.Red,
+            info: Logger.textColor.BrightYellow,
+            hint: Logger.textColor.White,
+            success: Logger.textColor.Green,
         };
 
-        if (print) console.log(date, color[type], contentAsString, Logger.style.Reset);
+        if (print)
+            console.log(date, color[type], contentAsString, Logger.style.Reset);
 
         if (write) Logger.instance.writeFile(contentAsString, date);
     }
 
-    public static error(args: string | string[], print: boolean = true, write: boolean = true) { Logger.log(args, print, write, 'error'); }
-    public static info(args: string | string[], print: boolean = true, write: boolean = true) { Logger.log(args, print, write, 'info'); }
-    public static hint(args: string | string[], print: boolean = true, write: boolean = true) { Logger.log(args, print, write, 'hint'); }
+    public static error(
+        args: string | string[],
+        print: boolean = true,
+        write: boolean = true
+    ) {
+        Logger.log(args, print, write, 'error');
+    }
+    public static info(
+        args: string | string[],
+        print: boolean = true,
+        write: boolean = true
+    ) {
+        Logger.log(args, print, write, 'info');
+    }
+    public static hint(
+        args: string | string[],
+        print: boolean = true,
+        write: boolean = true
+    ) {
+        Logger.log(args, print, write, 'hint');
+    }
 
-    public static waiting(args: string | string[], print: boolean = true, write: boolean = true) { Logger.log('⌛ ' + args, print, write, 'info'); }
-    public static success(args: string | string[], print: boolean = true, write: boolean = true) { Logger.log('✅ ' + args, print, write, 'success'); }
-    public static failed(args: string | string[], print: boolean = true, write: boolean = true) { Logger.log('❌ ' + args, print, write, 'error'); }
+    public static waiting(
+        args: string | string[],
+        print: boolean = true,
+        write: boolean = true
+    ) {
+        Logger.log('⌛ ' + args, print, write, 'info');
+    }
+    public static success(
+        args: string | string[],
+        print: boolean = true,
+        write: boolean = true
+    ) {
+        Logger.log('✅ ' + args, print, write, 'success');
+    }
+    public static failed(
+        args: string | string[],
+        print: boolean = true,
+        write: boolean = true
+    ) {
+        Logger.log('❌ ' + args, print, write, 'error');
+    }
 
     private now(logger: Logger): string {
-        const now: Date = new Date(); 
+        const now: Date = new Date();
         const date: string = logger.parseDate(now);
-        
+
         return date;
     }
 
     private writeFile(line: string, date: string) {
-        const logLine: string = line.split('\n').map((text, index) => {
-            if (index == 0) return date.split(' ')[1] + ': ' + text;
+        const logLine: string = line
+            .split('\n')
+            .map((text, index) => {
+                if (index == 0) return date.split(' ')[1] + ': ' + text;
 
-            return ' '.repeat((date.split(' ')[1] + ': ').length) + text;
-        }).join('\n');
+                return ' '.repeat((date.split(' ')[1] + ': ').length) + text;
+            })
+            .join('\n');
 
-        writeFileSync(`${Logger.instanceInitDate!.split(':')[0].replace(/\//g, '-')}_${Logger.instanceInitDate!.split(' ')[1].replace(/:/g, '').replace(/\./, '_')}.logs`, logLine + '\n', { encoding: 'utf8', flag: 'a'});
+        writeFileSync(
+            `${Logger.instanceInitDate!.split(':')[0].replace(
+                /\//g,
+                '-'
+            )}_${Logger.instanceInitDate!.split(' ')[1]
+                .replace(/:/g, '')
+                .replace(/\./, '_')}.logs`,
+            logLine + '\n',
+            { encoding: 'utf8', flag: 'a' }
+        );
     }
-
 }

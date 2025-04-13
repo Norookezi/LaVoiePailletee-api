@@ -4,10 +4,10 @@ import { Logger } from 'utils/Logger.utils';
 import { TwitchService } from 'utils/TwitchService.utils';
 
 export interface streamer {
-    id: string,
-    name: string,
-    image: string,
-    isOnline: boolean
+    id: string;
+    name: string;
+    image: string;
+    isOnline: boolean;
 }
 
 export class StreamerController {
@@ -22,7 +22,7 @@ export class StreamerController {
 
         //Get list of streamers
         this.getStreamerList();
-        
+
         //Update the list every 15 minutes
         // setInterval(()=>{
         //     this.getStreamerList();
@@ -30,24 +30,33 @@ export class StreamerController {
     }
 
     private static instance: StreamerController | null = null;
-    public static initialize(twitchInstance: TwitchService, owner: HelixUser): StreamerController {
-        if (StreamerController.instance) throw new Error('StreamerController est déjà initialisé');
-        StreamerController.instance = new StreamerController(twitchInstance, owner);     
+    public static initialize(
+        twitchInstance: TwitchService,
+        owner: HelixUser
+    ): StreamerController {
+        if (StreamerController.instance)
+            throw new Error('StreamerController est déjà initialisé');
+        StreamerController.instance = new StreamerController(
+            twitchInstance,
+            owner
+        );
         return StreamerController.instance;
     }
     public static getInstance(): StreamerController {
-        if (!StreamerController.instance) throw new Error('StreamerController non initialisé. Appelez initialize() d\'abord.');
+        if (!StreamerController.instance)
+            throw new Error(
+                'StreamerController non initialisé. Appelez initialize() d\'abord.'
+            );
         return StreamerController.instance;
     }
 
     async setStreamerStatus(name: string, status: boolean) {
         try {
-            this.cache.find(user => user.name == name)!.isOnline = status;
+            this.cache.find((user) => user.name == name)!.isOnline = status;
         } catch {
             console.error('Watching status on uncached streamer');
         }
     }
-
 
     async getStreamerList() {
         const sheet = new Sheet();
@@ -55,37 +64,71 @@ export class StreamerController {
             '1ggCnsqJmcA-Xxjv50NV_P9pqIZf9tc2rCz6PaYhZzNY',
             'A2:A'
         );
-        
-        const users: string[] = data.values.flat(1).filter(user => !user.includes(' ')).map(user => user.toLowerCase());
-        const cache: string[] = this.cache.map(s=>s.name.toLowerCase());
 
-        const added: string[] = users.filter(user => !cache.includes(user));
-        const removed: string[] = cache.filter(user => !users.includes(user));
+        const users: string[] = data.values
+            .flat(1)
+            .filter((user) => !user.includes(' '))
+            .map((user) => user.toLowerCase());
+        const cache: string[] = this.cache.map((s) => s.name.toLowerCase());
+
+        const added: string[] = users.filter((user) => !cache.includes(user));
+        const removed: string[] = cache.filter((user) => !users.includes(user));
 
         if (added.length != 0) {
-            
-            const addedList: HelixUser[] = await this.twitch.api.users.getUsersByNames(added);
-            const subscriptions = (await this.twitch.api.eventSub.getSubscriptions()).data;
+            const addedList: HelixUser[] =
+                await this.twitch.api.users.getUsersByNames(added);
+            const subscriptions = (
+                await this.twitch.api.eventSub.getSubscriptions()
+            ).data;
 
-            Promise.all(addedList.map(async (user) => {
-                const event = subscriptions.filter(sub => sub.condition.broadcaster_user_id == user.id);
-                // const security: string = process.env['SECURITY_HASH']!;
-                if (!event.find(sub => sub.type === 'stream.online')) {
-                    Logger.waiting(`Starting subscribeToStreamOnlineEvents for ${user.displayName}`, true, false);
-                    await this.twitch.api.eventSub.subscribeToStreamOnlineEvents(user.id, this.twitch.EventTransport).catch((err)=> {
-                        Logger.error(err);
-                    });
-                    Logger.success(`Done subscribeToStreamOnlineEvents for ${user.displayName}`, true, false);
-                }
-                if (!event.find(sub => sub.type === 'stream.offline')) {
-                    Logger.waiting(`Starting subscribeToStreamOfflineEvents for ${user.displayName}`, true, false);
-                    await this.twitch.api.eventSub.subscribeToStreamOfflineEvents(user.id, this.twitch.EventTransport).catch((err)=> {
-                        Logger.error(err);
-                    });
-                    Logger.success(`Done subscribeToStreamOfflineEvents for ${user.displayName}`, true, false);
-                }
-                await this.cacheAppend(user);
-            }));
+            Promise.all(
+                addedList.map(async (user) => {
+                    const event = subscriptions.filter(
+                        (sub) => sub.condition.broadcaster_user_id == user.id
+                    );
+                    if (!event.find((sub) => sub.type === 'stream.online')) {
+                        Logger.waiting(
+                            `Starting subscribeToStreamOnlineEvents for ${user.displayName}`,
+                            true,
+                            false
+                        );
+                        await this.twitch.api.eventSub
+                            .subscribeToStreamOnlineEvents(
+                                user.id,
+                                this.twitch.EventTransport
+                            )
+                            .catch((err) => {
+                                Logger.error(err);
+                            });
+                        Logger.success(
+                            `Done subscribeToStreamOnlineEvents for ${user.displayName}`,
+                            true,
+                            false
+                        );
+                    }
+                    if (!event.find((sub) => sub.type === 'stream.offline')) {
+                        Logger.waiting(
+                            `Starting subscribeToStreamOfflineEvents for ${user.displayName}`,
+                            true,
+                            false
+                        );
+                        await this.twitch.api.eventSub
+                            .subscribeToStreamOfflineEvents(
+                                user.id,
+                                this.twitch.EventTransport
+                            )
+                            .catch((err) => {
+                                Logger.error(err);
+                            });
+                        Logger.success(
+                            `Done subscribeToStreamOfflineEvents for ${user.displayName}`,
+                            true,
+                            false
+                        );
+                    }
+                    await this.cacheAppend(user);
+                })
+            );
         }
 
         if (removed.length != 0) {
@@ -100,23 +143,24 @@ export class StreamerController {
             id: user.id,
             name: user.displayName,
             image: user.profilePictureUrl,
-            isOnline: !!(await user.getStream())
+            isOnline: !!(await user.getStream()),
         });
         this.cacheRefreshedAt = new Date();
     }
     async cacheRemove(user: string) {
-        const streamer: streamer[] = this.cache.filter(u => u.name.toLowerCase() != user.toLowerCase());
+        const streamer: streamer[] = this.cache.filter(
+            (u) => u.name.toLowerCase() != user.toLowerCase()
+        );
         this.cacheRefreshedAt = new Date();
 
         this.cache = streamer;
     }
 
-
     async getStatus(): Promise<streamer[]> {
         return this.cache;
     }
 
-    async get(): Promise<{ cacheRefreshedAt: Date, streamers: streamer[] }> {
+    async get(): Promise<{ cacheRefreshedAt: Date; streamers: streamer[] }> {
         const status: streamer[] = await this.getStatus();
 
         return { cacheRefreshedAt: this.cacheRefreshedAt, streamers: status };

@@ -1,7 +1,10 @@
 import { ApiClient, HelixEventSubTransportOptions } from '@twurple/api';
 import { RefreshingAuthProvider } from '@twurple/auth';
 import { EventSubWsListener } from '@twurple/eventsub-ws';
-import { ConnectionAdapter, EventSubHttpListener } from '@twurple/eventsub-http';
+import {
+    ConnectionAdapter,
+    EventSubHttpListener,
+} from '@twurple/eventsub-http';
 import { config } from './dotenv.utils';
 import { Server } from 'http';
 
@@ -19,7 +22,7 @@ export class TwitchService {
     public EventTransport: HelixEventSubTransportOptions = {
         callback: `${process.env['API_HOST']}/webhook`,
         method: 'webhook',
-        secret: process.env['SECURITY_HASH']!
+        secret: process.env['SECURITY_HASH']!,
     };
 
     public static initialize(): TwitchService {
@@ -27,14 +30,16 @@ export class TwitchService {
             throw new Error('TwitchService est déjà initialisé');
         }
         TwitchService.instance = new TwitchService();
-          
+
         return TwitchService.instance;
     }
-    
+
     // Récupère l'instance existante
     public static getInstance(): TwitchService {
         if (!TwitchService.instance) {
-            throw new Error('TwitchService non initialisé. Appelez initialize() d\'abord.');
+            throw new Error(
+                'TwitchService non initialisé. Appelez initialize() d\'abord.'
+            );
         }
         return TwitchService.instance;
     }
@@ -45,19 +50,25 @@ export class TwitchService {
             clientSecret: process.env['TWITCH_CLIENT_SECRET']!,
         });
 
-        await this.__refreshingToken.addUserForToken({
-            accessToken: process.env['TWITCH_ACCESS_TOKEN']!,
-            refreshToken: process.env['TWITCH_CLIENT_REFRESH']!,
-            expiresIn: 0,
-            obtainmentTimestamp: 0
-        }, ['chat']);
+        await this.__refreshingToken.addUserForToken(
+            {
+                accessToken: process.env['TWITCH_ACCESS_TOKEN']!,
+                refreshToken: process.env['TWITCH_CLIENT_REFRESH']!,
+                expiresIn: 0,
+                obtainmentTimestamp: 0,
+            },
+            ['chat']
+        );
     }
 
     get api(): ApiClient {
         if (!this.__apiClient) {
-            if (!this.__refreshingToken) throw Error('Client isn\'t initialized');
+            if (!this.__refreshingToken)
+                throw Error('Client isn\'t initialized');
 
-            this.__apiClient = new ApiClient({ authProvider: this.__refreshingToken });
+            this.__apiClient = new ApiClient({
+                authProvider: this.__refreshingToken,
+            });
         }
 
         return this.__apiClient;
@@ -89,11 +100,10 @@ export class TwitchService {
                 listenerPort: Number(process.env['API_PORT']!),
                 getHostName: function (): Promise<string> {
                     return Promise.resolve(process.env['API_HOST']!);
-
                 },
                 pathPrefix: undefined,
-                usePathPrefixInHandlers: false
-            }
+                usePathPrefixInHandlers: false,
+            },
         });
     }
 }
