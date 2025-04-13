@@ -24,9 +24,9 @@ export class StreamerController {
         this.getStreamerList();
 
         //Update the list every 15 minutes
-        // setInterval(()=>{
-        //     this.getStreamerList();
-        // }, 10000);
+        setInterval(()=>{
+            this.getStreamerList();
+        }, 6e5);
     }
 
     private static instance: StreamerController | null = null;
@@ -151,6 +151,22 @@ export class StreamerController {
         const streamer: streamer[] = this.cache.filter(
             (u) => u.name.toLowerCase() != user.toLowerCase()
         );
+
+        const subscriptions = (
+            await this.twitch.api.eventSub.getSubscriptions()
+        ).data;
+
+        const userData: HelixUser | null =
+            await this.twitch.api.users.getUserByName(user);
+
+        if (!userData) return Logger.error(`User: ${user} not found on twitch`);
+
+        subscriptions
+            .filter((sub) => sub.condition.broadcaster_user_id == userData.id)
+            .forEach(async (sub) => {
+                await sub.unsubscribe();
+            });
+
         this.cacheRefreshedAt = new Date();
 
         this.cache = streamer;
