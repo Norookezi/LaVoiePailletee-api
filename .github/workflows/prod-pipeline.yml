@@ -85,12 +85,11 @@ jobs:
             ssh-keyscan $SERVER >> ~/.ssh/known_hosts
             echo "StrictHostKeyChecking no" >> ~/.ssh/config
             scp -i private_key -r ./docker-compose.yml ${SSH_USER}@${SERVER}:$DEPLOY_PATH
-            scp -i private_key -r ./.env ${SSH_USER}@${SERVER}:$DEPLOY_PATH
             ssh -i private_key -o StrictHostKeyChecking=no ${SSH_USER}@${SERVER} bash -c "'
               cd $DEPLOY_PATH
-              docker compose down
+              docker compose --project-name lavoiepailletee-api-prod down
               docker compose pull
               docker compose build
-              docker compose up -d
+              docker compose -f ./docker-compose.yml --project-name lavoiepailletee-api-prod up -d
             '"
           done
