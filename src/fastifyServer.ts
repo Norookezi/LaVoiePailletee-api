@@ -60,7 +60,7 @@ export class FastifyServer {
     setCors(server: FastifyInstance) {
         server.register(cors, {
             origin: process.env['API_CORS']!,
-            methods: ['POST', 'GET'],
+            methods: ['POST', 'GET', 'OPTIONS'],
         });
     }
 
